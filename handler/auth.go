@@ -11,6 +11,7 @@ func HTTPInterceptor(h http.HandlerFunc) http.HandlerFunc {
 
 		// 验证登陆token是否有效
 		if len(username) < 3 || !IsTokenValid(token) {
+			// 失败跳转到登陆界面
 			http.Redirect(w, r, "/static/view/signin.html", http.StatusFound)
 			return
 		}

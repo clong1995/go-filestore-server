@@ -25,7 +25,7 @@ func OnUserFileUploadFinished(username, filehash, filename string, filesize int6
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(username, filehash, filename, time.Now())
+	_, err = stmt.Exec(username, filehash, filename, filesize, time.Now())
 	if err != nil {
 		return false
 	}
@@ -97,4 +97,21 @@ func QueryUserFileMete(username string, filehash string) (*UserFile, error) {
 		}
 	}
 	return &ufile, nil
+}
+
+// 删除文件
+func DeleteUserFile(username, filehash string) bool {
+	stmt, err := mydb.DBConn().Prepare("update tbl_user_file set status=2 where user_name=? and file_hash=? limit 1")
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(username, filehash)
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+	return true
 }
