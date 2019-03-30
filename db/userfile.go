@@ -76,7 +76,7 @@ func QueryUserFileMetas(username string, limit int) ([]UserFile, error) {
 }
 
 // 查询: 用户单个文件信息
-func QueryUserFileMete(username string, filehash string) (*UserFile, error) {
+func QueryUserFileMeta(username string, filehash string) (*UserFile, error) {
 	stmt, err := mydb.DBConn().Prepare("select file_hash, file_name, file_size, upload_at, last_update from tbl_user_file where user_name = ? and file_hash =? limit 1")
 	if err != nil {
 		return nil, err

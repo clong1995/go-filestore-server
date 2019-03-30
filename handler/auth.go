@@ -1,9 +1,12 @@
 package handler
 
-import "net/http"
+import (
+	"github.com/gin-gonic/gin"
+	"net/http"
+)
 
 // http请求拦截器
-func HTTPInterceptor(h http.HandlerFunc) http.HandlerFunc {
+/*func HTTPInterceptor(h http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		username := r.Form.Get("username")
@@ -17,4 +20,21 @@ func HTTPInterceptor(h http.HandlerFunc) http.HandlerFunc {
 		}
 		h(w, r)
 	})
+}
+*/
+
+// gin版本
+func HTTPInterceptor() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		username := c.Request.FormValue("username")
+		token := c.Request.FormValue("token")
+
+		// 验证登陆token是否有效
+		if len(username) < 3 || !IsTokenValid(token) {
+			c.Abort()
+			c.Redirect(http.StatusFound, "/static/view/signin.html")
+			return
+		}
+		c.Next()
+	}
 }

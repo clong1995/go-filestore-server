@@ -38,7 +38,7 @@ func ParseRows(rows *sql.Rows) []map[string]interface{} {
 	records := make([]map[string]interface{}, 0)
 	for rows.Next() {
 		// 将行数据保存到record字典
-		err := rows.Scan(scanArgs)
+		err := rows.Scan(scanArgs...)
 		checkErr(err)
 
 		for i, col := range values {
