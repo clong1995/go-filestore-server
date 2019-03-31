@@ -1,10 +1,11 @@
-package mysql
+package db
 
 import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"go-filestore-server/config"
+	"go-filestore-server/util"
 	"log"
 	"os"
 )
@@ -12,8 +13,16 @@ import (
 var db *sql.DB
 
 func init() {
-	db, _ = sql.Open("mysql", config.MYSQLSource)
-	db.SetMaxOpenConns(1000)
+	fmt.Println(config.DefaultConfig,config.DefaultConfig.MysqlUser)
+	source := util.GetMysqlSource(config.DefaultConfig.MysqlUser,
+		config.DefaultConfig.MysqlPwd,
+		config.DefaultConfig.MysqlHost,
+		config.DefaultConfig.MysqlPort,
+		config.DefaultConfig.MysqlDb,
+		config.DefaultConfig.MysqlCharset)
+	fmt.Println(source)
+	db, _ = sql.Open("mysql", source)
+	db.SetMaxOpenConns(config.DefaultConfig.MysqlMaxConn)
 	err := db.Ping()
 	if err != nil {
 		fmt.Println("failed to connect to mysql, err:\t", err.Error())

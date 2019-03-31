@@ -1,8 +1,8 @@
-package db
+package model
 
 import (
 	"fmt"
-	mydb "go-filestore-server/db/mysql"
+	"go-filestore-server/db"
 )
 
 // User: 用户表结构体
@@ -17,7 +17,7 @@ type User struct {
 
 // 增加: 通过用户名+密码完成user表的注册操作
 func UserSignup(username string, passwd string) bool {
-	stmt, err := mydb.DBConn().Prepare("insert ignore into tbl_user (`user_name`,`user_pwd`) values(?,?)")
+	stmt, err := db.DBConn().Prepare("insert ignore into tbl_user (`user_name`,`user_pwd`) values(?,?)")
 	if err != nil {
 		fmt.Println("failed to insert err:\t", err.Error())
 		return false
@@ -38,7 +38,7 @@ func UserSignup(username string, passwd string) bool {
 // 更新: 刷新用户登陆的token
 func UpdateToken(username string, token string) bool {
 	// replace into 首先尝试插入数据到表中，1.如果发现表中已经有此行数据（根据主键或者唯一索引判断）则先删除此行数据，然后插入新的数据。2.否则，直接插入新数据。
-	stmt, err := mydb.DBConn().Prepare("replace into tbl_user_token (`user_name`,`user_token`) value (?,?)")
+	stmt, err := db.DBConn().Prepare("replace into tbl_user_token (`user_name`,`user_token`) value (?,?)")
 	if err != nil {
 		fmt.Println(err.Error())
 		return false
@@ -55,7 +55,7 @@ func UpdateToken(username string, token string) bool {
 
 // 查询: 判断密码是否一致
 func UserSignin(username string, encpwd string) bool {
-	stmt, err := mydb.DBConn().Prepare("select * from tbl_user where user_name ? limit 1")
+	stmt, err := db.DBConn().Prepare("select * from tbl_user where user_name ? limit 1")
 	if err != nil {
 		fmt.Println("err:\t", err.Error())
 		return false
@@ -71,7 +71,7 @@ func UserSignin(username string, encpwd string) bool {
 		return false
 	}
 
-	pRows := mydb.ParseRows(rows)
+	pRows := db.ParseRows(rows)
 	if len(pRows) > 0 && string(pRows[0]["user_pwd"].([]byte)) == encpwd {
 		return true
 	}
@@ -82,7 +82,7 @@ func UserSignin(username string, encpwd string) bool {
 func GetUserInfo(username string) (User, error) {
 	user := User{}
 
-	stmt, err := mydb.DBConn().Prepare("select user_name, signup_at from tbl_user where user_name=? limit 1")
+	stmt, err := db.DBConn().Prepare("select user_name, signup_at from tbl_user where user_name=? limit 1")
 	if err != nil {
 		fmt.Println(err.Error())
 		return user, err
@@ -99,7 +99,7 @@ func GetUserInfo(username string) (User, error) {
 
 // 查询用户是否存在
 func UserExist(username string) (bool, error) {
-	stmt, err := mydb.DBConn().Prepare("select 1 from tbl_user where user_name=? limit 1")
+	stmt, err := db.DBConn().Prepare("select 1 from tbl_user where user_name=? limit 1")
 	if err != nil {
 		fmt.Println(err.Error())
 		return false, err

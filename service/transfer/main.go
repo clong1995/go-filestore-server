@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"go-filestore-server/config"
-	"go-filestore-server/db"
+	"go-filestore-server/model"
 	"go-filestore-server/mq"
 	"go-filestore-server/store/oss"
 	"log"
@@ -12,12 +12,12 @@ import (
 )
 
 func main() {
-	if !config.AsyncTransferEnable {
+	if !config.DefaultConfig.AsyncTransferEnable {
 		log.Println("异步转移文件功能目前被禁用,请检查相关配置")
 		return
 	}
 	log.Println("文件转移服务启动中，开始监听转移任务队列...")
-	mq.StartConsume(config.TransOSSQueueName, "transfer_oss", ProcessTransfer)
+	mq.StartConsume(config.DefaultConfig.TransOSSQueueName, "transfer_oss", ProcessTransfer)
 }
 
 // 处理文件转移
@@ -43,6 +43,6 @@ func ProcessTransfer(msg []byte) bool {
 		return false
 	}
 
-	_ = db.UpdateFileLocation(pubData.FileHash, pubData.DestLocation)
+	_ = model.UpdateFileLocation(pubData.FileHash, pubData.DestLocation)
 	return true
 }

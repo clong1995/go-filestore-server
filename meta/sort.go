@@ -1,8 +1,9 @@
 package meta
 
-import "time"
-
-const baseFormat = "2006-01-02 15:04:05"
+import (
+	"go-filestore-server/common"
+	"time"
+)
 
 type ByUploadTime []FileMeta
 
@@ -15,7 +16,7 @@ func (b ByUploadTime) Swap(i, j int) {
 }
 
 func (b ByUploadTime) Less(i, j int) bool {
-	iTime, _ := time.Parse(baseFormat, b[i].UploadAt)
-	jTime, _ := time.Parse(baseFormat, b[j].UploadAt)
+	iTime, _ := time.Parse(common.StandardTimeFormat, b[i].UploadAt)
+	jTime, _ := time.Parse(common.StandardTimeFormat, b[j].UploadAt)
 	return iTime.UnixNano() > jTime.UnixNano()
 }

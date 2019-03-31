@@ -14,7 +14,9 @@ func Client() *oss.Client {
 		return ossCli
 	}
 
-	ossCli, err := oss.New(config.OSSEndpoint, config.OSSAccesskeyID, config.OSSAccesskeySecret)
+	ossCli, err := oss.New(config.DefaultConfig.OSSEndpoint,
+		config.DefaultConfig.OSSAccessKey,
+		config.DefaultConfig.OSSAccessSecret)
 	if err != nil {
 		fmt.Println(err)
 		return nil
@@ -26,7 +28,7 @@ func Client() *oss.Client {
 func Bucket() *oss.Bucket {
 	cli := Client()
 	if cli != nil {
-		bucket, err := cli.Bucket(config.OSSBucket)
+		bucket, err := cli.Bucket(config.DefaultConfig.OSSBucket)
 		if err != nil {
 			fmt.Println(err.Error())
 			return nil

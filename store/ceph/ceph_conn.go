@@ -16,14 +16,14 @@ func GetCephConnection() *s3.S3 {
 
 	// 1. 初始化ceph的一些信息
 	auth := aws.Auth{
-		AccessKey: config.CephAccessKey,
-		SecretKey: config.CephSecretKey,
+		AccessKey: config.DefaultConfig.CephAccessKey,
+		SecretKey: config.DefaultConfig.CephSecretKey,
 	}
 
 	curRegion := aws.Region{
 		Name:                 "default",
-		EC2Endpoint:          config.CephGWEndpoint,
-		S3Endpoint:           config.CephGWEndpoint,
+		EC2Endpoint:          config.DefaultConfig.CephGWEndpoint,
+		S3Endpoint:           config.DefaultConfig.CephGWEndpoint,
 		S3BucketEndpoint:     "",
 		S3LocationConstraint: false,
 		S3LowercaseBucket:    false,

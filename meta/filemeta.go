@@ -1,16 +1,16 @@
 package meta
 
 import (
-	mydb "go-filestore-server/db"
+	"go-filestore-server/model"
 	"sort"
 )
 
 type FileMeta struct {
-	FileHash string `json:"file_hash"`
-	FileName string `json:"file_name"`
-	FileSize int64  `json:"file_size"`
-	Location string `json:"location"`
-	UploadAt string `json:"upload_at"`
+	FileHash string `json:"file_hash"` // 文件Hash
+	FileName string `json:"file_name"` // 文件名称
+	FileSize int64  `json:"file_size"` // 文件大小
+	Location string `json:"location"`  // 文件位置
+	UploadAt string `json:"upload_at"` // 上次时间
 }
 
 var fileMetas map[string]FileMeta
@@ -26,7 +26,7 @@ func UpdateFileMeta(fmeta FileMeta) {
 
 // 新增/更新文件元信息到mysql中
 func UpdateFileMetaDB(fmeta FileMeta) bool {
-	return mydb.OnFileUploadFinished(fmeta.FileHash, fmeta.FileName, fmeta.FileSize, fmeta.Location)
+	return model.OnFileUploadFinished(fmeta.FileHash, fmeta.FileName, fmeta.FileSize, fmeta.Location)
 }
 
 // 通过sha1值获取文件的元信息对象
@@ -36,7 +36,7 @@ func GetFileMeta(fileSha1 string) FileMeta {
 
 // 从mysql获取文件元信息
 func GetFileMetaDB(fileSha1 string) (*FileMeta, error) {
-	tfile, err := mydb.GetFileMeta(fileSha1)
+	tfile, err := model.GetFileMeta(fileSha1)
 	if tfile == nil || err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func GetLastFileMetas(count int) []FileMeta {
 
 // 批量从mysql获取文件元信息
 func GetLastFileMetasDB(limit int) ([]FileMeta, error) {
-	tfiles, err := mydb.GetFileMetaList(limit)
+	tfiles, err := model.GetFileMetaList(limit)
 	if err != nil {
 		return make([]FileMeta, 0), err
 	}

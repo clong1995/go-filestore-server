@@ -1,14 +1,22 @@
-package db
+package model
 
 import (
 	"database/sql"
 	"fmt"
-	mydb "go-filestore-server/db/mysql"
+	"go-filestore-server/db"
 )
+
+// TableFile: 文件表结构体
+type TableFile struct {
+	FileHash string         `json:"file_hash"`
+	FileName sql.NullString `json:"file_name"`
+	FileSize sql.NullInt64  `json:"file_size"`
+	FileAddr sql.NullString `json:"file_addr"`
+}
 
 // 插入:  文件上传完成，保存meta
 func OnFileUploadFinished(filehash string, filename string, filesize int64, fileaddr string) bool {
-	stmt, err := mydb.DBConn().Prepare("insert ignore into tbl_file (`file_hash`,`file_name`,`file_size`,`file_addr`,`status`) value (?,?,?,?,1)")
+	stmt, err := db.DBConn().Prepare("insert ignore into tbl_file (`file_hash`,`file_name`,`file_size`,`file_addr`,`status`) value (?,?,?,?,1)")
 	if err != nil {
 		fmt.Println("failed to prepare statement, err:\t", err.Error())
 		return false
@@ -29,17 +37,9 @@ func OnFileUploadFinished(filehash string, filename string, filesize int64, file
 	return false
 }
 
-// TableFile: 文件表结构体
-type TableFile struct {
-	FileHash string         `json:"file_hash"`
-	FileName sql.NullString `json:"file_name"`
-	FileSize sql.NullInt64  `json:"file_size"`
-	FileAddr sql.NullString `json:"file_addr"`
-}
-
 // 查询:  获取文件云信息
 func GetFileMeta(filehash string) (*TableFile, error) {
-	stmt, err := mydb.DBConn().Prepare("select file_hash, file_addr, file_name, file_size from tbl_file where file_hash = ? and status = 1 limit 1")
+	stmt, err := db.DBConn().Prepare("select file_hash, file_addr, file_name, file_size from tbl_file where file_hash = ? and status = 1 limit 1")
 	if err != nil {
 		fmt.Println(err.Error())
 		return nil, err
@@ -62,7 +62,7 @@ func GetFileMeta(filehash string) (*TableFile, error) {
 
 // 查询:  批量获取文件元信息
 func GetFileMetaList(limit int) ([]TableFile, error) {
-	stmt, err := mydb.DBConn().Prepare("select file_hash, file_addr, file_name, file_size from tbl_file where status=1 limit ?")
+	stmt, err := db.DBConn().Prepare("select file_hash, file_addr, file_name, file_size from tbl_file where status=1 limit ?")
 	if err != nil {
 		fmt.Println(err.Error())
 		return nil, err
@@ -93,7 +93,7 @@ func GetFileMetaList(limit int) ([]TableFile, error) {
 
 // 更新:  更新文件的存储地址
 func UpdateFileLocation(filehash string, fileaddr string) bool {
-	stmt, err := mydb.DBConn().Prepare("update tbl_file set `file_addr` = ? where `file_hash` = ? limit 1")
+	stmt, err := db.DBConn().Prepare("update tbl_file set `file_addr` = ? where `file_hash` = ? limit 1")
 	if err != nil {
 		fmt.Println(err.Error())
 		return false
@@ -109,6 +109,42 @@ func UpdateFileLocation(filehash string, fileaddr string) bool {
 	if rf, err := ret.RowsAffected(); nil == err {
 		if rf <= 0 {
 			fmt.Println("更新文件addr 失败, filehash:\t", filehash)
+		}
+		return true
+	}
+	return false
+}
+
+// 文件是否已经上传过
+func IsFileUploaded(filehash string) bool {
+	stmt, err := db.DBConn().Prepare("select 1 from tbl_file where filehash=? and status=1 limit 1")
+	// TODO 测试中文输入，完成查询逻辑
+	rows, err := stmt.Query(filehash)
+	if err != nil {
+		return false
+	} else if rows == nil || !rows.Next() {
+		return false
+	}
+	return true
+}
+
+// 文件删除
+func OnFileRemoved(filehash string) bool {
+	stmt, err := db.DBConn().Prepare("update tbl_file set status=2 where filehash=? and status=1 limit 1")
+	if err != nil {
+		fmt.Println("failed to prepare statement, err:", err.Error())
+		return false
+	}
+	defer stmt.Close()
+
+	ret, err := stmt.Exec(filehash)
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+	if rf, err := ret.RowsAffected(); nil == err {
+		if rf <= 0 {
+			fmt.Println("file with hash not uploaded:\t", filehash)
 		}
 		return true
 	}

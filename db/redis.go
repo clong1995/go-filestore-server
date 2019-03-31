@@ -1,4 +1,4 @@
-package redis
+package db
 
 import (
 	"fmt"
@@ -11,6 +11,14 @@ var (
 	pool *redis.Pool
 )
 
+func init() {
+	pool = newRedisPool()
+}
+
+func RedisPool() *redis.Pool {
+	return pool
+}
+
 // 创建redis连接池
 func newRedisPool() *redis.Pool {
 	return &redis.Pool{
@@ -19,14 +27,14 @@ func newRedisPool() *redis.Pool {
 		IdleTimeout: 300 * time.Second,
 		Dial: func() (conn redis.Conn, e error) {
 			// 1.打开连接
-			c, err := redis.Dial("tcp", config.RedisHost)
+			c, err := redis.Dial("tcp", config.DefaultConfig.RedisHost)
 			if err != nil {
 				fmt.Println(err)
 				return nil, err
 			}
 
 			// 2.访问认证
-			if _, err = c.Do("AUTH", config.RedisPass); err != nil {
+			if _, err = c.Do("AUTH", config.DefaultConfig.RedisPass); err != nil {
 				c.Close()
 				return nil, err
 			}
@@ -40,12 +48,4 @@ func newRedisPool() *redis.Pool {
 			return err
 		},
 	}
-}
-
-func init() {
-	pool = newRedisPool()
-}
-
-func RedisPool() *redis.Pool {
-	return pool
 }

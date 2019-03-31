@@ -14,7 +14,7 @@ var notifyClose chan *amqp.Error
 
 func init() {
 	// 是否开启异步转移功能，开启时才初始化rabbitMQ连接
-	if !config.AsyncTransferEnable {
+	if !config.DefaultConfig.AsyncTransferEnable {
 		return
 	}
 	if initChannel() {
@@ -40,7 +40,7 @@ func initChannel() bool {
 		return true
 	}
 
-	conn, err := amqp.Dial(config.RabbitURL)
+	conn, err := amqp.Dial(config.DefaultConfig.RabbitURL)
 	if err != nil {
 		log.Println(err.Error())
 		return false

@@ -55,7 +55,7 @@ func multipartUpload(filename string, targetURL string, chunkSize int) error {
 			ch <- curIdx
 		}(bufCopied[:n], index)
 
-		//遇到任何错误立即返回，并忽略 EOF 错误信息
+		// 遇到任何错误立即返回，并忽略 EOF 错误信息
 		if err != nil {
 			if err == io.EOF {
 				break

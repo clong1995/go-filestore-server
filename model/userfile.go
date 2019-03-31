@@ -1,8 +1,8 @@
-package db
+package model
 
 import (
 	"fmt"
-	mydb "go-filestore-server/db/mysql"
+	"go-filestore-server/db"
 	"time"
 )
 
@@ -19,7 +19,7 @@ type UserFile struct {
 // 添加: 插入用户文件表
 func OnUserFileUploadFinished(username, filehash, filename string, filesize int64) bool {
 	// insert ignore 会忽略数据库中已经存在的数据
-	stmt, err := mydb.DBConn().Prepare("insert ignore into tbl_user_file (`user_name`,`file_hash`,`file_name`,`file_size`,`upload_at`) values(?,?,?,?,?) ")
+	stmt, err := db.DBConn().Prepare("insert ignore into tbl_user_file (`user_name`,`file_hash`,`file_name`,`file_size`,`upload_at`) values(?,?,?,?,?) ")
 	if err != nil {
 		return false
 	}
@@ -34,7 +34,7 @@ func OnUserFileUploadFinished(username, filehash, filename string, filesize int6
 
 // 更新: 文件重命名
 func RenameFileName(username, filehash, filename string) bool {
-	stmt, err := mydb.DBConn().Prepare("update tbl_user_file set file_name = ? where user_name = ? and file_hash = ? limit 1")
+	stmt, err := db.DBConn().Prepare("update tbl_user_file set file_name = ? where user_name = ? and file_hash = ? limit 1")
 	if err != nil {
 		fmt.Println(err.Error())
 		return false
@@ -51,7 +51,7 @@ func RenameFileName(username, filehash, filename string) bool {
 
 // 查询: 批量获取用户文件信息
 func QueryUserFileMetas(username string, limit int) ([]UserFile, error) {
-	stmt, err := mydb.DBConn().Prepare("select file_hash, file_name, file_size, upload_at,last_update from tbl_user_file where user_name=? and limit ?")
+	stmt, err := db.DBConn().Prepare("select file_hash, file_name, file_size, upload_at,last_update from tbl_user_file where user_name=? and limit ?")
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func QueryUserFileMetas(username string, limit int) ([]UserFile, error) {
 
 // 查询: 用户单个文件信息
 func QueryUserFileMeta(username string, filehash string) (*UserFile, error) {
-	stmt, err := mydb.DBConn().Prepare("select file_hash, file_name, file_size, upload_at, last_update from tbl_user_file where user_name = ? and file_hash =? limit 1")
+	stmt, err := db.DBConn().Prepare("select file_hash, file_name, file_size, upload_at, last_update from tbl_user_file where user_name = ? and file_hash =? limit 1")
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +101,7 @@ func QueryUserFileMeta(username string, filehash string) (*UserFile, error) {
 
 // 删除文件
 func DeleteUserFile(username, filehash string) bool {
-	stmt, err := mydb.DBConn().Prepare("update tbl_user_file set status=2 where user_name=? and file_hash=? limit 1")
+	stmt, err := db.DBConn().Prepare("update tbl_user_file set status=2 where user_name=? and file_hash=? limit 1")
 	if err != nil {
 		fmt.Println(err.Error())
 		return false

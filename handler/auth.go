@@ -5,6 +5,22 @@ import (
 	"net/http"
 )
 
+// gin版本
+func HTTPInterceptor() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		username := c.Request.FormValue("username")
+		token := c.Request.FormValue("token")
+
+		// 验证登陆token是否有效
+		if len(username) < 3 || !IsTokenValid(token) {
+			c.Abort()
+			c.Redirect(http.StatusFound, "/static/view/signin.html")
+			return
+		}
+		c.Next()
+	}
+}
+
 // http请求拦截器
 /*func HTTPInterceptor(h http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -22,19 +38,3 @@ import (
 	})
 }
 */
-
-// gin版本
-func HTTPInterceptor() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		username := c.Request.FormValue("username")
-		token := c.Request.FormValue("token")
-
-		// 验证登陆token是否有效
-		if len(username) < 3 || !IsTokenValid(token) {
-			c.Abort()
-			c.Redirect(http.StatusFound, "/static/view/signin.html")
-			return
-		}
-		c.Next()
-	}
-}
