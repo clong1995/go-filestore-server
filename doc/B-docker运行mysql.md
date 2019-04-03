@@ -1,5 +1,5 @@
 # docker 安装mysql主从
-- 前提是安装好docker
+- 前提是安装好docker（MAC环境）
 ## 0.准备工作
 ```
 # 0.提取创建好mysql/data目录
