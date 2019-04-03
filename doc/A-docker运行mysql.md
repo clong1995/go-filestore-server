@@ -41,11 +41,11 @@ character-set-server = utf8
 server_id = 2 # 需保证主库和从库的server_id不同，假设从库设为2
 replicate-do-db=fileserver # 需要复制的数据库名，需复制多个数据库的话则重复设置这个选项
 ```
-# 1.拉取Mysql5.7镜像到本地
+## 1.拉取Mysql5.7镜像到本地
 ```
 docker pull mysql:5.7
 ```
-# 2.运行master节点和slave节点
+## 2.运行master节点和slave节点
 ``` 
 # 自己改路径
 # master
@@ -53,7 +53,7 @@ docker run -d --name mysql-master -p 13306:3306 -v /Users/xx/docker/mysql/data/c
 # slave
 docker run -d --name mysql-slave  -p 13307:3306 -v /Users/xx/docker/mysql/data/conf/slave.conf:/etc/mysql/mysql.conf.d/mysqld.cnf  -v /Users/xx/docker/mysql/data_slave:/var/lib/mysql  -e MYSQL_ROOT_PASSWORD=123456 mysql:5.7
 ```
-# 3.登陆主从节点修改配置
+## 3.登陆主从节点修改配置
 ``` 
 # ifconfig 查询本机ip （192.168.xx.xx 是你本机的内网ip）
 
@@ -76,4 +76,10 @@ mysql > start slave;
 mysql > create database fileserver default character set utf8mb4;
 ```
 
+## 运行Mysql
+```
+mysql -u root -h 192.168.xx.xx -P13306 -p123456
 
+
+mysql -u root -h 192.168.xx.xx -P13307 -p123456
+```
