@@ -4,9 +4,9 @@ import (
 	"bufio"
 	"encoding/json"
 	"go-filestore-server/config"
+	"go-filestore-server/db/mq"
+	"go-filestore-server/db/oss"
 	"go-filestore-server/model"
-	"go-filestore-server/mq"
-	"go-filestore-server/store/oss"
 	"log"
 	"os"
 )

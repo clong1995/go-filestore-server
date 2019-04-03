@@ -1,4 +1,4 @@
-package db
+package redis
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ var (
 	pool *redis.Pool
 )
 
-func init() {
+func InitRedis() {
 	pool = newRedisPool()
 }
 

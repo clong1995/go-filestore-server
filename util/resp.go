@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-// RespMsg: http响应数据的通用结构
+// http响应数据的通用结构
 type RespMsg struct {
 	Code int         `json:"code"` //
 	Msg  string      `json:"msg"`  //
@@ -31,7 +31,7 @@ func (resp *RespMsg) JSONBytes() []byte {
 	return r
 }
 
-// JSONString:  对象转json格式的string
+// 对象转json格式的string
 func (resp *RespMsg) JSONString() string {
 	r, err := json.Marshal(resp)
 	if err != nil {
@@ -40,12 +40,12 @@ func (resp *RespMsg) JSONString() string {
 	return string(r)
 }
 
-// GenSimpleRespStream: 只包含code和message的响应体([]byte)
+// 只包含code和message的响应体([]byte)
 func GenSimpleRespStream(code int, msg string) []byte {
 	return []byte(fmt.Sprintf(`{"code":%d,"msg":"%s"}`, code, msg))
 }
 
-// GenSimpleRespString: 只包含code和message的响应体(string)
+// 只包含code和message的响应体(string)
 func GenSimpleRespString(code int, msg string) string {
 	return fmt.Sprintf(`{"code":%d,"msg":"%s"}`, code, msg)
 }

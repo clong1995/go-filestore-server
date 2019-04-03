@@ -13,7 +13,7 @@ func Client() *oss.Client {
 	if ossCli != nil {
 		return ossCli
 	}
-
+	
 	ossCli, err := oss.New(config.DefaultConfig.OSSEndpoint,
 		config.DefaultConfig.OSSAccessKey,
 		config.DefaultConfig.OSSAccessSecret)
@@ -52,7 +52,7 @@ func DownloadURL(objName string) string {
 func BuildLifeCycleRule(bucketName string) {
 	ruleTest1 := oss.BuildLifecycleRuleByDays("rul1", "/test", true, 30)
 	rules := []oss.LifecycleRule{ruleTest1}
-
+	
 	Client().SetBucketLifecycle(bucketName, rules)
 }
 

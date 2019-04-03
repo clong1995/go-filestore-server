@@ -1,4 +1,4 @@
-package db
+package mysql
 
 import (
 	"database/sql"
@@ -12,7 +12,7 @@ import (
 
 var db *sql.DB
 
-func init() {
+func InitMysql() {
 	fmt.Println(config.DefaultConfig,config.DefaultConfig.MysqlUser)
 	source := util.GetMysqlSource(config.DefaultConfig.MysqlUser,
 		config.DefaultConfig.MysqlPwd,

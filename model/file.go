@@ -3,7 +3,7 @@ package model
 import (
 	"database/sql"
 	"fmt"
-	"go-filestore-server/db"
+	"go-filestore-server/db/mysql"
 )
 
 // TableFile: 文件表结构体
@@ -16,7 +16,7 @@ type TableFile struct {
 
 // 插入:  文件上传完成，保存meta
 func OnFileUploadFinished(filehash string, filename string, filesize int64, fileaddr string) bool {
-	stmt, err := db.DBConn().Prepare("insert ignore into tbl_file (`file_hash`,`file_name`,`file_size`,`file_addr`,`status`) value (?,?,?,?,1)")
+	stmt, err := mysql.DBConn().Prepare("insert ignore into tbl_file (`file_hash`,`file_name`,`file_size`,`file_addr`,`status`) value (?,?,?,?,1)")
 	if err != nil {
 		fmt.Println("failed to prepare statement, err:\t", err.Error())
 		return false
@@ -39,7 +39,7 @@ func OnFileUploadFinished(filehash string, filename string, filesize int64, file
 
 // 查询:  获取文件云信息
 func GetFileMeta(filehash string) (*TableFile, error) {
-	stmt, err := db.DBConn().Prepare("select file_hash, file_addr, file_name, file_size from tbl_file where file_hash = ? and status = 1 limit 1")
+	stmt, err := mysql.DBConn().Prepare("select file_hash, file_addr, file_name, file_size from tbl_file where file_hash = ? and status = 1 limit 1")
 	if err != nil {
 		fmt.Println(err.Error())
 		return nil, err
@@ -62,7 +62,7 @@ func GetFileMeta(filehash string) (*TableFile, error) {
 
 // 查询:  批量获取文件元信息
 func GetFileMetaList(limit int) ([]TableFile, error) {
-	stmt, err := db.DBConn().Prepare("select file_hash, file_addr, file_name, file_size from tbl_file where status=1 limit ?")
+	stmt, err := mysql.DBConn().Prepare("select file_hash, file_addr, file_name, file_size from tbl_file where status=1 limit ?")
 	if err != nil {
 		fmt.Println(err.Error())
 		return nil, err
@@ -93,7 +93,7 @@ func GetFileMetaList(limit int) ([]TableFile, error) {
 
 // 更新:  更新文件的存储地址
 func UpdateFileLocation(filehash string, fileaddr string) bool {
-	stmt, err := db.DBConn().Prepare("update tbl_file set `file_addr` = ? where `file_hash` = ? limit 1")
+	stmt, err := mysql.DBConn().Prepare("update tbl_file set `file_addr` = ? where `file_hash` = ? limit 1")
 	if err != nil {
 		fmt.Println(err.Error())
 		return false
@@ -117,7 +117,7 @@ func UpdateFileLocation(filehash string, fileaddr string) bool {
 
 // 文件是否已经上传过
 func IsFileUploaded(filehash string) bool {
-	stmt, err := db.DBConn().Prepare("select 1 from tbl_file where filehash=? and status=1 limit 1")
+	stmt, err := mysql.DBConn().Prepare("select 1 from tbl_file where filehash=? and status=1 limit 1")
 	// TODO 测试中文输入，完成查询逻辑
 	rows, err := stmt.Query(filehash)
 	if err != nil {
@@ -130,7 +130,7 @@ func IsFileUploaded(filehash string) bool {
 
 // 文件删除
 func OnFileRemoved(filehash string) bool {
-	stmt, err := db.DBConn().Prepare("update tbl_file set status=2 where filehash=? and status=1 limit 1")
+	stmt, err := mysql.DBConn().Prepare("update tbl_file set status=2 where filehash=? and status=1 limit 1")
 	if err != nil {
 		fmt.Println("failed to prepare statement, err:", err.Error())
 		return false
