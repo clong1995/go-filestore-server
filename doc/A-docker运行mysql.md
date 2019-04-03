@@ -1,6 +1,6 @@
 # docker 安装mysql主从
 - 前提是安装好docker
-- 0. 准备工作
+## 0.准备工作
 ```
 # 0.提取创建好mysql/data目录
 cd 
@@ -11,7 +11,6 @@ cd docker/mysql/data/conf/
 # Mac 路径 /Users/xx/docker/mysql/data/conf
 
 创建master.conf+slave.conf
-
 ```
 - master.conf
 ``` 
@@ -76,10 +75,15 @@ mysql > start slave;
 mysql > create database fileserver default character set utf8mb4;
 ```
 
-## 运行Mysql
+## 4.运行Mysql和操作
 ```
 mysql -u root -h 192.168.xx.xx -P13306 -p123456
-
-
 mysql -u root -h 192.168.xx.xx -P13307 -p123456
+
+# 停止重启Docker
+docker stop mysql-slave
+docker stop mysql-master
+
+docker start mysql-master
+docker start mysql-slave
 ```
