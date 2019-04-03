@@ -5,7 +5,6 @@ const (
 )
 
 // 存储类型（表示文件存到哪里)
-
 const (
 	_          int = iota
 	StoreLocal     // 1.节点本地

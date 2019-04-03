@@ -88,7 +88,7 @@ CREATE TABLE `tbl_file` (
   `ext1` int(11) DEFAULT '0' COMMENT '备用字段1',
   `ext2` text COMMENT '备用字段2',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `idx_file_hash` (`file_sha1`),
+  UNIQUE KEY `idx_file_hash` (`file_hash`),
   KEY `idx_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -264,22 +264,22 @@ mkdir -p /data/mysql/data_slave
 docker run -d --name mysql-slave -p 13307:3306 -v /data/mysql/conf/slave.conf:/etc/mysql/mysq.conf.d/mysqld.conf -v /data/mysql/data_slave:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=123456 mysql:5.7
 ```
 ### 4.登陆MYSQL主节点配置同步信息
-   - 登陆mysql 
-   ``` 
-   # 192.168.1.xx 是你本机的内网ip
-   mysql -u root -h 192.168.1.xx -P13306 -p123456
-   ```
-   - 在mysql client中执行
-   ``` 
-   mysql > grant replication slave on *.* to 'slave'@'%' identified by 'slave';
-   mysql > flush privileges;
-   mysql > create database fileserver default character set utf8mb4;
-   ```
-   - 获取status，得到类似如下的输出:
-   ```
-   mysql > show master status G;
-   ```
-### 5.登陆MYSQL主节点配置同步信息
+- 登陆mysql 
+``` 
+# 192.168.1.xx 是你本机的内网ip
+mysql -u root -h 192.168.1.xx -P13306 -p123456
+```
+- 在mysql client中执行
+``` 
+mysql > grant replication slave on *.* to 'slave'@'%' identified by 'slave';
+mysql > flush privileges;
+mysql > create database fileserver default character set utf8mb4;
+```
+- 获取status，得到类似如下的输出:
+```
+mysql > show master status \G;
+```
+### 5.登陆MYSQL从节点配置同步信息
 - 登陆mysql 
 ``` 
 # 192.168.1.xx 是你本机的内网ip
@@ -288,13 +288,14 @@ mysql -u root -h 192.168.1.xx -P13307 -p123456
 - 在mysql client中执行
 ``` 
 mysql > stop slave;
-mysql > create database fileserver default character set utf8mb4;
+# 这个创建表可忽略，master_log_pos=0,  如果pos是最新的mysql master pos, 请自动创建表
+# mysql > create database fileserver default character set utf8mb4;
 mysql > change master to master_host='192.168.1.xx',master_port=13306,master_user='slave',master_password='slave',master_log_file='log.000000',master_log_pos=0;
 mysql > start slave;
 ```
 - 获取status，得到类似如下的输出:
 ```
-mysql > show slave status G;
+mysql > show slave status \G;
 ```
 - 可以尝试在主mysql的fileserver数据库里建表操作下，然后在从节点上检查数据是否已经同步过来。
 ## 3-8 本章小结
