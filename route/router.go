@@ -12,9 +12,11 @@ func Router() *gin.Engine {
 	router.Static("/static/", "./static")
 
 	// 不需要经过验证就能访问接口
+	// 注册
 	router.GET("/user/signup", handler.SignupHandler)
 	router.POST("/user/signup", handler.DoSignupHandler)
 
+	// 登陆
 	router.GET("/user/signin", handler.SignInHandler)
 	router.POST("/user/signin", handler.DoSignInHandler)
 

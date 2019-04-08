@@ -58,6 +58,7 @@ docker run -d --name mysql-slave  -p 13307:3306 -v /Users/xx/docker/mysql/data/c
 
 # 登陆主节点
 mysql -u root -h 192.168.xx.xx -P13306 -p123456
+mysql -u root -h 127.0.0.1 -P13306 -p123456
 mysql > grant replication slave on *.* to 'slave'@'%' identified by 'slave';
 mysql > flush privileges;
 mysql > show master status \G;

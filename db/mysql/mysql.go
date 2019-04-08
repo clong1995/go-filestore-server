@@ -13,7 +13,7 @@ import (
 var db *sql.DB
 
 func InitMysql() {
-	fmt.Println(config.DefaultConfig,config.DefaultConfig.MysqlUser)
+	fmt.Println(config.DefaultConfig, config.DefaultConfig.MysqlUser)
 	source := util.GetMysqlSource(config.DefaultConfig.MysqlUser,
 		config.DefaultConfig.MysqlPwd,
 		config.DefaultConfig.MysqlHost,

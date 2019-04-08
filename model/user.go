@@ -1,8 +1,8 @@
 package model
 
 import (
-	"fmt"
 	"go-filestore-server/db/mysql"
+	"go-filestore-server/logger"
 )
 
 // User: 用户表结构体
@@ -19,14 +19,14 @@ type User struct {
 func UserSignup(username string, passwd string) bool {
 	stmt, err := mysql.DBConn().Prepare("insert ignore into tbl_user (`user_name`,`user_pwd`) values(?,?)")
 	if err != nil {
-		fmt.Println("failed to insert err:\t", err.Error())
+		logger.Info("failed to insert err:\t", err.Error())
 		return false
 	}
 	defer stmt.Close()
 
 	ret, err := stmt.Exec(username, passwd)
 	if err != nil {
-		fmt.Println("failed to insert, err:\t", err.Error())
+		logger.Info("failed to insert, err:\t", err.Error())
 		return false
 	}
 	if rowsAffected, err := ret.RowsAffected(); err == nil && rowsAffected > 0 {
@@ -40,14 +40,14 @@ func UpdateToken(username string, token string) bool {
 	// replace into 首先尝试插入数据到表中，1.如果发现表中已经有此行数据（根据主键或者唯一索引判断）则先删除此行数据，然后插入新的数据。2.否则，直接插入新数据。
 	stmt, err := mysql.DBConn().Prepare("replace into tbl_user_token (`user_name`,`user_token`) value (?,?)")
 	if err != nil {
-		fmt.Println(err.Error())
+		logger.Info(err.Error())
 		return false
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(username, token)
 	if err != nil {
-		fmt.Println(err.Error())
+		logger.Info(err.Error())
 		return false
 	}
 	return true
@@ -55,23 +55,24 @@ func UpdateToken(username string, token string) bool {
 
 // 查询: 判断密码是否一致
 func UserSignin(username string, encpwd string) bool {
-	stmt, err := mysql.DBConn().Prepare("select * from tbl_user where user_name ? limit 1")
+	stmt, err := mysql.DBConn().Prepare("select * from tbl_user where user_name =  ? limit 1")
 	if err != nil {
-		fmt.Println("err:\t", err.Error())
+		logger.Info("err:\t", err.Error())
 		return false
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.Query(username)
 	if err != nil {
-		fmt.Println(err.Error())
+		logger.Info(err.Error())
 		return false
 	} else if rows == nil {
-		fmt.Println("username not found:\t", username)
+		logger.Info("username not found:\t", username)
 		return false
 	}
 
 	pRows := mysql.ParseRows(rows)
+	logger.Info(string(pRows[0]["user_pwd"].([]byte)))
 	if len(pRows) > 0 && string(pRows[0]["user_pwd"].([]byte)) == encpwd {
 		return true
 	}
@@ -84,7 +85,7 @@ func GetUserInfo(username string) (User, error) {
 
 	stmt, err := mysql.DBConn().Prepare("select user_name, signup_at from tbl_user where user_name=? limit 1")
 	if err != nil {
-		fmt.Println(err.Error())
+		logger.Info(err.Error())
 		return user, err
 	}
 	defer stmt.Close()
@@ -101,7 +102,7 @@ func GetUserInfo(username string) (User, error) {
 func UserExist(username string) (bool, error) {
 	stmt, err := mysql.DBConn().Prepare("select 1 from tbl_user where user_name=? limit 1")
 	if err != nil {
-		fmt.Println(err.Error())
+		logger.Info(err.Error())
 		return false, err
 	}
 	defer stmt.Close()

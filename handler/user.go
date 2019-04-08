@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"go-filestore-server/config"
+	"go-filestore-server/logger"
 	"go-filestore-server/model"
 	"go-filestore-server/util"
 	"net/http"
@@ -57,7 +58,7 @@ func DoSignInHandler(c *gin.Context) {
 	password := c.Request.FormValue("password")
 
 	encPasswd := util.Sha1([]byte(password + config.DefaultConfig.PwdSalt))
-
+	logger.Info("signIn:\t", username, password, encPasswd)
 	// 1.校验用户名及密码
 	pwdChecked := model.UserSignin(username, encPasswd)
 	if !pwdChecked {

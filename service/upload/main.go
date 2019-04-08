@@ -19,7 +19,7 @@ func main() {
 	fmt.Println("初始化配置...")
 	config.InitConfig("./config.json")
 	fmt.Printf("config:\t%+v\n", config.DefaultConfig)
-	
+
 	// 日志配置
 	fmt.Println("日志配置...")
 	path := "logs"
@@ -31,15 +31,15 @@ func main() {
 	defer file.Close()
 	loger := log.New(file, "", log.Ldate|log.Ltime|log.Lshortfile)
 	logger.SetDefault(loger)
-	
+
 	// 数据库初始化
 	redis.InitRedis()
 	mysql.InitMysql()
 	mq.InitMq()
-	
+
 	// 目录初始化
 	handler.InitTemp()
-	
+
 	fmt.Println("初始化路由...")
 	// gin framework
 	router := route.Router()

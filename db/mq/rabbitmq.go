@@ -30,9 +30,9 @@ func StartConsume(qName, cName string, callback func(msg []byte) bool) {
 		log.Fatal(err)
 		return
 	}
-	
+
 	done = make(chan bool)
-	
+
 	go func() {
 		// 循环读取channel的数据
 		for d := range msgs {
@@ -42,10 +42,10 @@ func StartConsume(qName, cName string, callback func(msg []byte) bool) {
 			}
 		}
 	}()
-	
+
 	// 接收done的信号，没有信息过来则会一直阻塞，避免该函数退出
 	<-done
-	
+
 	// 关闭通道
 	channel.Close()
 }
@@ -69,7 +69,7 @@ func InitMq() {
 	if initChannel() {
 		channel.NotifyClose(notifyClose)
 	}
-	
+
 	// 断线自动重连
 	go func() {
 		for {
@@ -88,13 +88,13 @@ func initChannel() bool {
 	if channel != nil {
 		return true
 	}
-	
+
 	conn, err := amqp.Dial(config.DefaultConfig.RabbitURL)
 	if err != nil {
 		log.Println(err.Error())
 		return false
 	}
-	
+
 	channel, err = conn.Channel()
 	if err != nil {
 		log.Println(err.Error())
@@ -108,7 +108,7 @@ func Publish(exchange, routingKey string, msg []byte) bool {
 	if !initChannel() {
 		return false
 	}
-	
+
 	if nil == channel.Publish(
 		exchange,
 		routingKey,

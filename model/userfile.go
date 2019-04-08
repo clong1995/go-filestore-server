@@ -1,8 +1,8 @@
 package model
 
 import (
-	"fmt"
 	"go-filestore-server/db/mysql"
+	"go-filestore-server/logger"
 	"time"
 )
 
@@ -36,14 +36,14 @@ func OnUserFileUploadFinished(username, filehash, filename string, filesize int6
 func RenameFileName(username, filehash, filename string) bool {
 	stmt, err := mysql.DBConn().Prepare("update tbl_user_file set file_name = ? where user_name = ? and file_hash = ? limit 1")
 	if err != nil {
-		fmt.Println(err.Error())
+		logger.Info(err.Error())
 		return false
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(filename, username, filehash)
 	if err != nil {
-		fmt.Println(err.Error())
+		logger.Info(err.Error())
 		return false
 	}
 	return true
@@ -67,7 +67,7 @@ func QueryUserFileMetas(username string, limit int) ([]UserFile, error) {
 		ufile := UserFile{}
 		err = rows.Scan(&ufile.FileHash, &ufile.FileName, &ufile.FileSize, &ufile.UploadAt, &ufile.LastUpdated)
 		if err != nil {
-			fmt.Println(err.Error())
+			logger.Info(err.Error())
 			break
 		}
 		userFiles = append(userFiles, ufile)
@@ -92,7 +92,7 @@ func QueryUserFileMeta(username string, filehash string) (*UserFile, error) {
 	if rows.Next() {
 		err = rows.Scan(&ufile.FileHash, &ufile.FileName, &ufile.FileSize, &ufile.UploadAt, &ufile.LastUpdated)
 		if err != nil {
-			fmt.Println(err.Error())
+			logger.Info(err.Error())
 			return nil, err
 		}
 	}
@@ -103,14 +103,14 @@ func QueryUserFileMeta(username string, filehash string) (*UserFile, error) {
 func DeleteUserFile(username, filehash string) bool {
 	stmt, err := mysql.DBConn().Prepare("update tbl_user_file set status=2 where user_name=? and file_hash=? limit 1")
 	if err != nil {
-		fmt.Println(err.Error())
+		logger.Info(err.Error())
 		return false
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(username, filehash)
 	if err != nil {
-		fmt.Println(err.Error())
+		logger.Info(err.Error())
 		return false
 	}
 	return true
