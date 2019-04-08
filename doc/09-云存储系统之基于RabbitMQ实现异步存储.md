@@ -45,3 +45,62 @@
 - Direct:类似单播，RoutingKey 和 BindingKey完全匹配
 - Topic: 类似组播，转发到符合通配符的Queue
 - Headers:请求头与消息头匹配，才能接收消息
+
+## 9-5 docker安装rabbitMq及UI管理
+``` 
+mkdir -p /data/rabbitmq 
+docker run -d --hostname rabbit-svr --name rabbit -p 5672:5672 -p 15672:15672 
+-p 25672:25672 
+-v /data/rabbitmq:/var/lib/rabbitmq 
+rabbitmq:management
+```
+- 登录rabbitmq
+``` 
+localhost:15672
+guest
+guest
+```
+- 创建exchanges
+``` 
+# add a new exchange 
+Name: uploadserver.trans
+Type: direct
+Durability: Durable
+```
+- 创建Queues
+``` 
+# add a new queue
+Name: uploadserver.trans.oss
+Durability: Durable
+```
+- 添加绑定
+``` 
+# add binding to this queue
+From exchange: uploadserver.trans
+Routing Key:oss
+```
+- 发布信息
+``` 
+# publish message
+Routing key: oss
+Payload:
+test
+```
+- 获取信息
+``` 
+# get messages
+Ack Mode: Nack message requeue true
+```
+## 9-6 实现异步转移的mq生产者
+- rabbitmq.go
+- producer.go
+## 9-7 实现异步转移的mq消费者
+- consumer.go
+
+## 9-8 异步转移文件测试+小结
+### 小结
+- 同步与异步逻辑的对比分析
+- RabbitMq的基本概念与工作原理
+- RabbitMq的安装与控制台管理
+- Go结合队列实现文件的异步转移
+- 文件上传与转移的简单测试
