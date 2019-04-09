@@ -10,12 +10,12 @@ import (
 	"go-filestore-server/db/ceph"
 	"go-filestore-server/db/mq"
 	"go-filestore-server/db/oss"
+	"go-filestore-server/logger"
 	"go-filestore-server/meta"
 	"go-filestore-server/model"
 	"go-filestore-server/util"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -32,7 +32,7 @@ func InitTemp() {
 	// 尝试创建目录
 	err := os.MkdirAll(config.DefaultConfig.TempLocalRootDir, 0744)
 	if err != nil {
-		log.Println("无法创建临时存储目录，程序将退出")
+		fmt.Println("无法创建临时存储目录，程序将退出")
 		os.Exit(1)
 	}
 }
@@ -63,7 +63,7 @@ func DoUploadHandler(c *gin.Context) {
 	// 1.从form表单中获得文件内容句柄
 	file, head, err := c.Request.FormFile("file")
 	if err != nil {
-		fmt.Printf("failed to get form data, err:%s\n", err.Error())
+		logger.Info("failed to get form data, err:\t", err.Error())
 		errCode = -1
 		return
 	}
@@ -72,7 +72,7 @@ func DoUploadHandler(c *gin.Context) {
 	// 2.把文件内容转为[]byte
 	buf := bytes.NewBuffer(nil)
 	if _, err := io.Copy(buf, file); err != nil {
-		fmt.Printf("failed to get file data,err:%s\n", err.Error())
+		logger.Info("failed to get file data,err:\t", err.Error())
 		errCode = -2
 		return
 	}
@@ -89,7 +89,7 @@ func DoUploadHandler(c *gin.Context) {
 	fileMeta.Location = config.DefaultConfig.TempLocalRootDir + fileMeta.FileHash
 	newFile, err := os.Create(fileMeta.Location)
 	if err != nil {
-		fmt.Printf("failed to create file, err:%s\n", err.Error())
+		logger.Info("failed to create file, err:\t", err.Error())
 		errCode = -3
 		return
 	}
@@ -97,7 +97,7 @@ func DoUploadHandler(c *gin.Context) {
 
 	nByte, err := newFile.Write(buf.Bytes())
 	if int64(nByte) != fileMeta.FileSize || err != nil {
-		fmt.Printf("failed to save data into file, writtenSize:%d,err:%s\n", nByte, err.Error())
+		logger.Info("failed to save data into file, writtenSize:\t", nByte, "err:\t", err.Error())
 		errCode = -4
 		return
 	}
@@ -118,7 +118,7 @@ func DoUploadHandler(c *gin.Context) {
 			// TODO 设置oss的文件名， 方便指定文件名下载
 			err = oss.Bucket().PutObject(ossPath, newFile)
 			if err != nil {
-				fmt.Println(err.Error())
+				logger.Info(err.Error())
 				errCode = -5
 				return
 			}
@@ -300,7 +300,7 @@ func TryFastUploadHandler(c *gin.Context) {
 	// 2.从文件表中查询相同hash的文件记录
 	fileMeta, err := meta.GetFileMetaDB(filehash)
 	if err != nil {
-		fmt.Println(err.Error())
+		logger.Info(err.Error())
 		c.Status(http.StatusInternalServerError)
 		return
 	}
@@ -350,7 +350,7 @@ func DownloadURLHandler(c *gin.Context) {
 	} else if strings.HasPrefix(row.FileAddr.String, "oss/") {
 		// oss 下载url
 		signedURL := oss.DownloadURL(row.FileAddr.String)
-		fmt.Println(row.FileAddr.String)
+		logger.Info(row.FileAddr.String)
 		c.Data(http.StatusOK, "octet-stream", []byte(signedURL))
 	}
 }

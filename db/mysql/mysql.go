@@ -13,14 +13,13 @@ import (
 var db *sql.DB
 
 func InitMysql() {
-	fmt.Println(config.DefaultConfig, config.DefaultConfig.MysqlUser)
 	source := util.GetMysqlSource(config.DefaultConfig.MysqlUser,
 		config.DefaultConfig.MysqlPwd,
 		config.DefaultConfig.MysqlHost,
 		config.DefaultConfig.MysqlPort,
 		config.DefaultConfig.MysqlDb,
 		config.DefaultConfig.MysqlCharset)
-	fmt.Println(source)
+	fmt.Println("mysql source:\t", source)
 	db, _ = sql.Open("mysql", source)
 	db.SetMaxOpenConns(config.DefaultConfig.MysqlMaxConn)
 	err := db.Ping()

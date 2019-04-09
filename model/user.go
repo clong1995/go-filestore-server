@@ -35,24 +35,6 @@ func UserSignup(username string, passwd string) bool {
 	return false
 }
 
-// 更新: 刷新用户登陆的token
-func UpdateToken(username string, token string) bool {
-	// replace into 首先尝试插入数据到表中，1.如果发现表中已经有此行数据（根据主键或者唯一索引判断）则先删除此行数据，然后插入新的数据。2.否则，直接插入新数据。
-	stmt, err := mysql.DBConn().Prepare("replace into tbl_user_token (`user_name`,`user_token`) value (?,?)")
-	if err != nil {
-		logger.Info(err.Error())
-		return false
-	}
-	defer stmt.Close()
-
-	_, err = stmt.Exec(username, token)
-	if err != nil {
-		logger.Info(err.Error())
-		return false
-	}
-	return true
-}
-
 // 查询: 判断密码是否一致
 func UserSignin(username string, encpwd string) bool {
 	stmt, err := mysql.DBConn().Prepare("select * from tbl_user where user_name =  ? limit 1")
@@ -72,11 +54,28 @@ func UserSignin(username string, encpwd string) bool {
 	}
 
 	pRows := mysql.ParseRows(rows)
-	logger.Info(string(pRows[0]["user_pwd"].([]byte)))
 	if len(pRows) > 0 && string(pRows[0]["user_pwd"].([]byte)) == encpwd {
 		return true
 	}
 	return false
+}
+
+// 更新: 刷新用户登陆的token
+func UpdateToken(username string, token string) bool {
+	// replace into 首先尝试插入数据到表中，1.如果发现表中已经有此行数据（根据主键或者唯一索引判断）则先删除此行数据，然后插入新的数据。2.否则，直接插入新数据。
+	stmt, err := mysql.DBConn().Prepare("replace into tbl_user_token (`user_name`,`user_token`) value (?,?)")
+	if err != nil {
+		logger.Info(err.Error())
+		return false
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(username, token)
+	if err != nil {
+		logger.Info(err.Error())
+		return false
+	}
+	return true
 }
 
 // 查询: 查询用户信息

@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"go-filestore-server/common"
 	"go-filestore-server/config"
 	"go-filestore-server/logger"
 	"go-filestore-server/model"
@@ -24,8 +25,8 @@ func DoSignupHandler(c *gin.Context) {
 
 	if len(username) < 3 || len(passwd) < 5 {
 		c.JSON(http.StatusOK, gin.H{
-			"msg":  "invalid parameter",
-			"code": -1,
+			"msg":  "请求参数无效",
+			"code": common.StatusParamInvalid,
 		})
 		return
 	}
@@ -36,13 +37,13 @@ func DoSignupHandler(c *gin.Context) {
 	suc := model.UserSignup(username, encPasswd)
 	if suc {
 		c.JSON(http.StatusOK, gin.H{
-			"msg":  "Signup successed",
-			"code": 0,
+			"msg":  "注册成功",
+			"code": common.StatusOK,
 		})
 	} else {
 		c.JSON(http.StatusOK, gin.H{
-			"msg":  "Signup failed",
-			"code": -2,
+			"msg":  "注册失败",
+			"code": common.StatusRegisterFailed,
 		})
 	}
 }
@@ -63,8 +64,8 @@ func DoSignInHandler(c *gin.Context) {
 	pwdChecked := model.UserSignin(username, encPasswd)
 	if !pwdChecked {
 		c.JSON(http.StatusOK, gin.H{
-			"msg":  "Login failed",
-			"code": -1,
+			"msg":  "登陆失败",
+			"code": common.StatusLoginFailed,
 		})
 		return
 	}
@@ -74,16 +75,16 @@ func DoSignInHandler(c *gin.Context) {
 	upRes := model.UpdateToken(username, token)
 	if !upRes {
 		c.JSON(http.StatusOK, gin.H{
-			"msg":  "login failed",
-			"code": -2,
+			"msg":  "登陆失败",
+			"code": common.StatusLoginFailed,
 		})
 		return
 	}
 
 	// 3.登陆成功后重定向到首页
 	resp := util.RespMsg{
-		Code: 0,
-		Msg:  "OK",
+		Code: int(common.StatusOK),
+		Msg:  "登陆成功",
 		Data: struct {
 			Location string
 			Username string
@@ -103,21 +104,14 @@ func UserInfoHandler(c *gin.Context) {
 	username := c.Request.FormValue("username")
 	//	token := c.Request.FormValue("token")
 
-	// // 2. 验证token是否有效
-	// isValidToken := IsTokenValid(token)
-	// if !isValidToken {
-	// 	w.WriteHeader(http.StatusForbidden)
-	// 	return
-	// }
-
-	// 3. 查询用户信息
+	// 2. 查询用户信息
 	user, err := model.GetUserInfo(username)
 	if err != nil {
 		c.JSON(http.StatusForbidden, gin.H{})
 		return
 	}
 
-	// 4.组装并且响应用户数据
+	// 3.组装并且响应用户数据
 	resp := util.RespMsg{
 		Code: 0,
 		Msg:  "OK",
@@ -131,14 +125,16 @@ func UserExistHandler(c *gin.Context) {
 	// 1.解析请求参数
 	username := c.Request.FormValue("username")
 
-	// 3.查询用户信息
+	// 2.查询用户信息
 	exists, err := model.UserExist(username)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"msg": "server error",
+			"code": common.StatusServerError,
+			"msg":  "server error",
 		})
 	} else {
 		c.JSON(http.StatusOK, gin.H{
+			"code":   common.StatusOK,
 			"msg":    "ok",
 			"exists": exists,
 		})

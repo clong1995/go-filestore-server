@@ -32,23 +32,6 @@ func OnUserFileUploadFinished(username, filehash, filename string, filesize int6
 	return true
 }
 
-// 更新: 文件重命名
-func RenameFileName(username, filehash, filename string) bool {
-	stmt, err := mysql.DBConn().Prepare("update tbl_user_file set file_name = ? where user_name = ? and file_hash = ? limit 1")
-	if err != nil {
-		logger.Info(err.Error())
-		return false
-	}
-	defer stmt.Close()
-
-	_, err = stmt.Exec(filename, username, filehash)
-	if err != nil {
-		logger.Info(err.Error())
-		return false
-	}
-	return true
-}
-
 // 查询: 批量获取用户文件信息
 func QueryUserFileMetas(username string, limit int) ([]UserFile, error) {
 	stmt, err := mysql.DBConn().Prepare("select file_hash, file_name, file_size, upload_at,last_update from tbl_user_file where user_name=? and limit ?")
@@ -75,6 +58,40 @@ func QueryUserFileMetas(username string, limit int) ([]UserFile, error) {
 	return userFiles, nil
 }
 
+// 删除文件
+func DeleteUserFile(username, filehash string) bool {
+	stmt, err := mysql.DBConn().Prepare("update tbl_user_file set status=2 where user_name=? and file_hash=? limit 1")
+	if err != nil {
+		logger.Info(err.Error())
+		return false
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(username, filehash)
+	if err != nil {
+		logger.Info(err.Error())
+		return false
+	}
+	return true
+}
+
+// 更新: 文件重命名
+func RenameFileName(username, filehash, filename string) bool {
+	stmt, err := mysql.DBConn().Prepare("update tbl_user_file set file_name = ? where user_name = ? and file_hash = ? limit 1")
+	if err != nil {
+		logger.Info(err.Error())
+		return false
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(filename, username, filehash)
+	if err != nil {
+		logger.Info(err.Error())
+		return false
+	}
+	return true
+}
+
 // 查询: 用户单个文件信息
 func QueryUserFileMeta(username string, filehash string) (*UserFile, error) {
 	stmt, err := mysql.DBConn().Prepare("select file_hash, file_name, file_size, upload_at, last_update from tbl_user_file where user_name = ? and file_hash =? limit 1")
@@ -97,21 +114,4 @@ func QueryUserFileMeta(username string, filehash string) (*UserFile, error) {
 		}
 	}
 	return &ufile, nil
-}
-
-// 删除文件
-func DeleteUserFile(username, filehash string) bool {
-	stmt, err := mysql.DBConn().Prepare("update tbl_user_file set status=2 where user_name=? and file_hash=? limit 1")
-	if err != nil {
-		logger.Info(err.Error())
-		return false
-	}
-	defer stmt.Close()
-
-	_, err = stmt.Exec(username, filehash)
-	if err != nil {
-		logger.Info(err.Error())
-		return false
-	}
-	return true
 }

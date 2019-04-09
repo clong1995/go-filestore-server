@@ -63,6 +63,7 @@ func InitialMultipartUploadHandler(c *gin.Context) {
 		"msg":  "OK",
 		"data": upInfo,
 	})
+	return
 }
 
 // 上传文件分块

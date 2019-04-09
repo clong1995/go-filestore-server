@@ -13,6 +13,8 @@ var (
 
 func InitRedis() {
 	pool = newRedisPool()
+	data, err := pool.Get().Do("KEYS", "*")
+	fmt.Println(data, err)
 }
 
 func RedisPool() *redis.Pool {

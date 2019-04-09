@@ -1,0 +1,82 @@
+<head>
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <script src="/static/js/layui.js"></script>
+    <script type="text/javascript">
+        var req = new XMLHttpRequest();
+        var paused = false;
+        var fileParts;
+        var lastByteLoaded = 0;
+        var byteLoaded = 0;
+        var url =
+            "http://localhost:8080/file/download?filehash=1030d02f7802ea2a0862542ad46427b1e09e52a5&username=admin&token=b25dc2dede0760bfa1dd83eba31062fb5caabe2b";
+
+        $(document).ready(function () {
+            req.open("GET", url, true);
+            addListeners(req);
+            req.send();
+        });
+
+        function addListeners(req) {
+            //监听进度事件
+            req.addEventListener("progress", function (evt) {
+                if (evt.lengthComputable) {
+                    var percentComplete = (lastByteLoaded + evt.loaded) / (lastByteLoaded + evt.total);
+                    console.log(percentComplete);
+                    $("#progressing").html((percentComplete * 100) + "%");
+                    byteLoaded = lastByteLoaded + evt.loaded;
+                    if (evt.loaded == evt.total) {
+                        $("#ctlbtn").attr("disabled", "true");
+                    }
+                }
+            }, false);
+
+            req.responseType = "blob";
+            req.onreadystatechange = function () {
+                if (req.readyState === 4 && (req.status === 200 || req.status === 206)) {
+                    var name = req.getResponseHeader("Content-disposition");
+                    var filename = name.match(/attachment; filename="(.*)"/)[1];
+
+                    if (typeof window.chrome !== 'undefined') {
+                        // Chrome version
+                        var link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(req.response);
+                        link.download = filename;
+                        link.click();
+                    } else if (typeof window.navigator.msSaveBlob !== 'undefined') {
+                        // IE version
+                        var blob = new Blob([req.response], {
+                            type: 'application/force-download'
+                        });
+                        window.navigator.msSaveBlob(blob, filename);
+                    } else {
+                        // Firefox version
+                        var file = new File([req.response], filename, {
+                            type: 'application/force-download'
+                        });
+                        window.open(URL.createObjectURL(file));
+                    }
+                }
+            };
+        }
+
+        function abortDownload() {
+            if (!paused) {
+                req.abort();
+                lastByteLoaded = byteLoaded;
+            } else {
+                // TODO: 继续下载
+                req.open("GET", url, true);
+                addListeners(req);
+                req.setRequestHeader('Range', 'bytes=' + byteLoaded + '-');
+                req.send();
+            }
+            paused = !paused;
+        }
+    </script>
+</head>
+
+<body>
+<div id="progressing">[开始]</div>
+<button id="ctlbtn" class="btn btn-primary" onclick="abortDownload()" style="margin:5px;">暂停/继续
+</button>
+</body>
